@@ -4,7 +4,7 @@
 - 오늘, 내일, 모레까지 3일간의 날씨를 오전 6시, 오후 3시 기준으로 표시
 - Open-Meteo API 사용 (인증키 불필요, 무료)
 
-GitHub 날씨 리포트 링크: https://github.com/<내_아이디>/<저장소_이름>
+GitHub 날씨 리포트 링크: https://github.com/<coffee-17>/<https://github.com/Coffee-17/weather-report.git>
 """
 
 import json
@@ -63,7 +63,6 @@ def get_coordinates(city: str) -> Optional[tuple]:
     return None
 
 
-
 def fetch_weather(lat: float, lon: float) -> Optional[dict]:
     """Open-Meteo에서 시간별/일별 예보 가져오기"""
     params = {
@@ -84,7 +83,6 @@ def fetch_weather(lat: float, lon: float) -> Optional[dict]:
         print(f"❌ 날씨 정보를 가져오지 못했습니다: {e}")
         return None
 
-    
 
 def build_report(city: str, data: dict) -> tuple:
     """화면 출력용 텍스트와 JSON 저장용 데이터를 함께 만든다."""
@@ -128,3 +126,42 @@ def build_report(city: str, data: dict) -> tuple:
         saved["days"].append(day_info)
 
     return "\n".join(lines), saved
+
+
+def save_json(city: str, saved: dict) -> str:
+    filename = f"weather_{city}_{datetime.now():%Y%m%d_%H%M%S}.json"
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(saved, f, ensure_ascii=False, indent=2)
+    return filename
+
+
+def main():
+    print(f"🌤️ 날씨 예보 프로그램 (Open-Meteo API)")
+    print("-" * 46)
+    print(f"오전 6시, 오후 3시 기준으로 {FORECAST_DAYS}일간 날씨를 제공합니다.")
+    print("-" * 46)
+
+    city = input(f"\n날씨를 확인할 지역을 입력하세요 (기본값: {DEFAULT_CITY}): ").strip()
+    city = city or DEFAULT_CITY
+
+    coords = get_coordinates(city)
+    if coords is None:
+        print(f"❌ '{city}' 지역을 찾을 수 없습니다.")
+        return
+    lat, lon = coords
+    print(f"\n📍 {city} (위도: {lat}, 경도: {lon}) 의 날씨 정보를 가져옵니다...\n")
+
+    data = fetch_weather(lat, lon)
+    if data is None:
+        return
+
+    report, saved = build_report(city, data)
+    print(report)
+
+    answer = input("\n날씨 정보를 JSON 파일로 저장하시겠습니까? (y/n): ").strip().lower()
+    if answer == "y":
+        print(f"✅ 저장 완료: {save_json(city, saved)}")
+
+
+if __name__ == "__main__":
+    main()
