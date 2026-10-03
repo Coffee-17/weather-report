@@ -61,3 +61,25 @@ def get_coordinates(city: str) -> Optional[tuple]:
     except requests.RequestException as e:
         print(f"❌ 지역 검색 중 오류가 발생했습니다: {e}")
     return None
+
+
+
+def fetch_weather(lat: float, lon: float) -> Optional[dict]:
+    """Open-Meteo에서 시간별/일별 예보 가져오기"""
+    params = {
+        "latitude": lat,
+        "longitude": lon,
+        "hourly": "temperature_2m,precipitation_probability,"
+                  "relative_humidity_2m,wind_speed_10m,weather_code",
+        "daily": "temperature_2m_max,temperature_2m_min",
+        "wind_speed_unit": "ms",
+        "timezone": "Asia/Seoul",
+        "forecast_days": FORECAST_DAYS,
+    }
+    try:
+        res = requests.get(FORECAST_URL, params=params, timeout=10)
+        res.raise_for_status()
+        return res.json()
+    except requests.RequestException as e:
+        print(f"❌ 날씨 정보를 가져오지 못했습니다: {e}")
+        return None
