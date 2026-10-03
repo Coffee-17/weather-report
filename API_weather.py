@@ -4,7 +4,7 @@
 - 오늘, 내일, 모레까지 3일간의 날씨를 오전 6시, 오후 3시 기준으로 표시
 - Open-Meteo API 사용 (인증키 불필요, 무료)
 
-GitHub 날씨 리포트 링크: https://github.com/<coffee-17>/<https://github.com/Coffee-17/weather-report.git>
+GitHub 날씨 리포트 링크: https://github.com/coffee-17/weather-report
 """
 
 import json
@@ -136,7 +136,7 @@ def save_json(city: str, saved: dict) -> str:
 
 
 def main():
-    print(f"🌤️ 날씨 예보 프로그램 (Open-Meteo API)")
+    print("🌤️ 날씨 예보 프로그램 (Open-Meteo API)")
     print("-" * 46)
     print(f"오전 6시, 오후 3시 기준으로 {FORECAST_DAYS}일간 날씨를 제공합니다.")
     print("-" * 46)
