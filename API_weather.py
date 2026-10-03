@@ -83,3 +83,48 @@ def fetch_weather(lat: float, lon: float) -> Optional[dict]:
     except requests.RequestException as e:
         print(f"❌ 날씨 정보를 가져오지 못했습니다: {e}")
         return None
+
+    
+
+def build_report(city: str, data: dict) -> tuple:
+    """화면 출력용 텍스트와 JSON 저장용 데이터를 함께 만든다."""
+    hourly, daily = data["hourly"], data["daily"]
+    lines, saved = [], {"city": city, "days": []}
+    bar = "=" * 70
+    sub = "-" * 56
+
+    lines += [bar, f"🌤️ {city} 날씨 예보 (오전 6시 / 오후 3시 기준)", bar]
+
+    for i, date_str in enumerate(daily["time"]):
+        d = datetime.strptime(date_str, "%Y-%m-%d")
+        label = DAY_LABELS[i] if i < len(DAY_LABELS) else f"{i}일 후"
+        lines += ["", f"📅 {label} ({d:%m.%d.})", sub]
+        day_info = {"date": date_str, "times": {}}
+
+        for hour, title in TARGET_HOURS:
+            idx = hourly["time"].index(f"{date_str}T{hour:02d}:00")
+            info = {
+                "날씨": WEATHER_CODES.get(hourly["weather_code"][idx], "알 수 없음"),
+                "기온": round(hourly["temperature_2m"][idx]),
+                "강수확률": hourly["precipitation_probability"][idx],
+                "습도": hourly["relative_humidity_2m"][idx],
+                "풍속": round(hourly["wind_speed_10m"][idx]),
+            }
+            day_info["times"][f"{hour:02d}:00"] = info
+            lines += [
+                f"  {title} {hour:02d}:00",
+                f"    날씨: {info['날씨']}",
+                f"    기온: {info['기온']} °C",
+                f"    강수확률: {info['강수확률']}%",
+                f"    습도: {info['습도']}%",
+                f"    풍속: {info['풍속']} m/s",
+                "",
+            ]
+
+        tmin = round(daily["temperature_2m_min"][i])
+        tmax = round(daily["temperature_2m_max"][i])
+        day_info["최저기온"], day_info["최고기온"] = tmin, tmax
+        lines += [f"  🌡️ 일일 기온: 최저 {tmin} °C / 최고 {tmax} °C", "", bar]
+        saved["days"].append(day_info)
+
+    return "\n".join(lines), saved
